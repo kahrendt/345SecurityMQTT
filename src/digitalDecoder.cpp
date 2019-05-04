@@ -218,7 +218,7 @@ void DigitalDecoder::updateSensorState(uint32_t serial, uint64_t payload)
     
     // Since the sensor will frequently blast out the same signal many times, we only want to treat
     // the first detected signal as the supervisory signal. 
-    bool supervised = (payload & 0x000000040000) && ((currentState.lastUpdateTime - lastState.lastUpdateTime) > 2);
+//    bool supervised = (payload & 0x000000040000) && ((currentState.lastUpdateTime - lastState.lastUpdateTime) > 2);
 
     if ((currentState.loop1 != lastState.loop1) || supervised)
     {
