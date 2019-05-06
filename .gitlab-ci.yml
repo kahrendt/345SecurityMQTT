@@ -6,7 +6,7 @@ docker-master:
   before_script:
     - docker info
     - mkdir -p /root/.docker || true
-    - cp etc/docker-config.json /root/.docker/config.json
+    - cp /etc/docker/daemon.json /root/.docker/config.json
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.0.0/qemu-arm-static -O qemu-arm-static
