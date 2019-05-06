@@ -1,5 +1,5 @@
 docker-master:
-  stage: docker
+  stage: build
   image: docker:latest
   services:
     - docker:dind
