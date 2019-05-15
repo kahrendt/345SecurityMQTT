@@ -4,6 +4,7 @@ COPY qemu-arm-static /usr/bin
 RUN uname -a
 
 RUN echo Hello World
+RUN apt-key
 
 # Install build tools and remove apt-cache afterwards
 RUN apt-get -q update && apt-get install -yq --no-install-recommends \
