@@ -6,6 +6,7 @@ docker-master:
   before_script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker run --rm --privileged multiarch/qemu-user-static:register --reset
   script:
     - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.0.0/qemu-arm-static -O qemu-arm-static
     - chmod 554 qemu-arm-static
