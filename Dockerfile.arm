@@ -1,8 +1,7 @@
 FROM arm32v7/debian:stretch AS build
+COPY qemu-arm-static /usr/bin
 
 RUN uname -a
-
-COPY qemu-arm-static /usr/bin
 
 RUN echo Hello World
 
