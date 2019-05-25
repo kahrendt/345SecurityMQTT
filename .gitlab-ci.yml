@@ -5,8 +5,9 @@ docker-master:
     - docker:dind
   variables:
     DOCKER_CLI_EXPERIMENTAL: "enabled"
+    REGISTRY_IMAGE: "registry.gitlab.com/vondruska/345SecurityMQTT"
   before_script:
-    - docker info
+    - docker 
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker run --rm --privileged hypriot/qemu-register
   script:
