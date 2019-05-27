@@ -1,17 +1,54 @@
-docker-master:
+stages:
+  - build
+  - mainifest
+  
+variables:
+  REGISTRY_IMAGE: "registry.gitlab.com/vondruska/345securitymqtt"
+
+docker-master-arm:
   stage: build
   image: docker:latest
   services:
     - docker:dind
-  variables:
-    DOCKER_CLI_EXPERIMENTAL: "enabled"
-    REGISTRY_IMAGE: "registry.gitlab.com/vondruska/345securitymqtt"
   before_script:
     - docker 
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker run --rm --privileged hypriot/qemu-register
   script:
     - docker build --pull -f Dockerfile.arm -t "$CI_REGISTRY_IMAGE" .
-    - docker tag "$REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:arm-$CI_JOB_ID"
+    - docker tag "$CI_REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:arm32v7-$CI_JOB_ID"
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master
+
+docker-master-x64:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - docker 
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker run --rm --privileged hypriot/qemu-register
+  script:
+    - docker build --pull -f Dockerfile -t "$CI_REGISTRY_IMAGE" .
+    - docker tag "$CI_REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:x64-$CI_JOB_ID"
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master
+
+docker-mainifest:
+  stage: mainifest
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_CLI_EXPERIMENTAL: "enabled"
+  before_script:
+    - docker 
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker mainifest create "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE:x64-$CI_JOB_ID" "$CI_REGISTRY_IMAGE:arm32v7-$CI_JOB_ID"
+    - docker mainifest push "$CI_REGISTRY_IMAGE:latest"
   only:
     - master
