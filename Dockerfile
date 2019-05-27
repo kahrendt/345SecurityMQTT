@@ -1,4 +1,5 @@
-FROM debian:stretch AS build
+ARG ARCH=library
+FROM $ARCH/debian:stretch AS build
 
 # Install build tools and remove apt-cache afterwards
 RUN apt-get -q update && apt-get install -yq --no-install-recommends \
