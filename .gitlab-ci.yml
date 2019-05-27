@@ -16,7 +16,7 @@ docker-master-arm:
     - docker run --rm --privileged hypriot/qemu-register
   script:
     - docker build --pull -f Dockerfile.arm -t "$CI_REGISTRY_IMAGE" .
-    - docker tag "$CI_REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:arm32v7-$CI_JOB_ID"
+    - docker tag "$CI_REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID"
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
@@ -31,7 +31,7 @@ docker-master-x64:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - docker build --pull -f Dockerfile -t "$CI_REGISTRY_IMAGE" .
-    - docker tag "$CI_REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:x64-$CI_JOB_ID"
+    - docker tag "$CI_REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID"
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
@@ -47,7 +47,7 @@ docker-manifest:
     - docker 
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - docker manifest create "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE:x64-$CI_JOB_ID" "$CI_REGISTRY_IMAGE:arm32v7-$CI_JOB_ID"
+    - docker manifest create "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" "$CI_REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID"
     - docker manifest push "$CI_REGISTRY_IMAGE:latest"
   only:
     - master
