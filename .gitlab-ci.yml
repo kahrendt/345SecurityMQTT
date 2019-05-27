@@ -1,6 +1,6 @@
 stages:
   - build
-  - mainifest
+  - manifest
   
 variables:
   REGISTRY_IMAGE: "registry.gitlab.com/vondruska/345securitymqtt"
@@ -29,7 +29,6 @@ docker-master-x64:
   before_script:
     - docker 
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker run --rm --privileged hypriot/qemu-register
   script:
     - docker build --pull -f Dockerfile -t "$CI_REGISTRY_IMAGE" .
     - docker tag "$CI_REGISTRY_IMAGE" "$CI_REGISTRY_IMAGE:x64-$CI_JOB_ID"
@@ -37,8 +36,8 @@ docker-master-x64:
   only:
     - master
 
-docker-mainifest:
-  stage: mainifest
+docker-manifest:
+  stage: manifest
   image: docker:latest
   services:
     - docker:dind
@@ -48,7 +47,7 @@ docker-mainifest:
     - docker 
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - docker mainifest create "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE:x64-$CI_JOB_ID" "$CI_REGISTRY_IMAGE:arm32v7-$CI_JOB_ID"
-    - docker mainifest push "$CI_REGISTRY_IMAGE:latest"
+    - docker manifest create "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE:x64-$CI_JOB_ID" "$CI_REGISTRY_IMAGE:arm32v7-$CI_JOB_ID"
+    - docker manifest push "$CI_REGISTRY_IMAGE:latest"
   only:
     - master
