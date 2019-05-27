@@ -10,10 +10,9 @@ docker-master-arm:
   services:
     - docker:dind
   before_script:
-    - docker 
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - docker build --pull -f Dockerfile --build-args ARCH -t "$CI_REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID" .
+    - docker build --pull -f Dockerfile --build-arg ARCH -t "$CI_REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID" .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
@@ -26,11 +25,10 @@ docker-master-x64:
   services:
     - docker:dind
   before_script:
-    - docker 
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker run --rm --privileged hypriot/qemu-register
   script:
-    - docker build --pull -f Dockerfile --build-args ARCH -t "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" .
+    - docker build --pull -f Dockerfile --build-arg ARCH -t "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
     - master
