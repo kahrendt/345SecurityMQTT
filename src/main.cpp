@@ -124,7 +124,7 @@ int main(int argc, char ** argv)
         return -1;
     }
     
-    if(rtlsdr_set_tuner_gain(dev, 350) < 0)
+    if(rtlsdr_set_tuner_gain(dev, 450) < 0)
     {
         std::cout << "Failed to set gain" << std::endl;
         return -1;
