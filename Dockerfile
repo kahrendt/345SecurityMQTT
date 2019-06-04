@@ -13,7 +13,7 @@ COPY . /usr/src/app/345SecurityMQTT
 WORKDIR /usr/src/app/345SecurityMQTT/src
 RUN ./build.sh
 
-FROM debian:stretch
+FROM $ARCH/debian:stretch
 
 RUN apt-get -q update && apt-get install -yq --no-install-recommends \
 	librtlsdr-dev rtl-sdr libmosquittopp-dev \
