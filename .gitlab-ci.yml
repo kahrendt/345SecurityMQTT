@@ -1,6 +1,10 @@
 stages:
   - build
   - manifest
+
+variables:
+  REGISTRY_IMAGE: "vondruska/345securitymqtt"
+
   
 docker-master-arm:
   stage: build
@@ -10,11 +14,11 @@ docker-master-arm:
   services:
     - docker:dind
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin
     - docker run --rm --privileged hypriot/qemu-register
   script:
-    - docker build --pull -f Dockerfile --build-arg ARCH -t "$CI_REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID" .
-    - docker push "$CI_REGISTRY_IMAGE"
+    - docker build --pull -f Dockerfile --build-arg ARCH -t "$REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID" .
+    - docker push "$REGISTRY_IMAGE"
   only:
     - master
 
@@ -26,10 +30,10 @@ docker-master-x64:
   services:
     - docker:dind
   before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin
   script:
     - docker build --pull -f Dockerfile --build-arg ARCH -t "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" .
-    - docker push "$CI_REGISTRY_IMAGE"
+    - docker push "$REGISTRY_IMAGE"
   only:
     - master
 
@@ -41,8 +45,7 @@ docker-manifest:
   variables:
     DOCKER_CLI_EXPERIMENTAL: "enabled"
   before_script:
-    - docker 
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin
   script:
     - docker manifest create "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" "$CI_REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID"
     - docker manifest push "$CI_REGISTRY_IMAGE:latest"
