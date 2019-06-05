@@ -32,7 +32,7 @@ docker-master-x64:
   before_script:
     - echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin
   script:
-    - docker build --pull -f Dockerfile --build-arg ARCH -t "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" .
+    - docker build --pull -f Dockerfile --build-arg ARCH -t "$REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" .
     - docker push "$REGISTRY_IMAGE"
   only:
     - master
@@ -47,7 +47,7 @@ docker-manifest:
   before_script:
     - echo "$REGISTRY_PASSWORD" | docker login -u "$REGISTRY_USER" --password-stdin
   script:
-    - docker manifest create "$CI_REGISTRY_IMAGE:latest" "$CI_REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" "$CI_REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID"
-    - docker manifest push "$CI_REGISTRY_IMAGE:latest"
+    - docker manifest create "$REGISTRY_IMAGE:latest" "$REGISTRY_IMAGE:x64-$CI_PIPELINE_IID" "$REGISTRY_IMAGE:arm32v7-$CI_PIPELINE_IID"
+    - docker manifest push "$REGISTRY_IMAGE:latest"
   only:
     - master
