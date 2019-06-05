@@ -1,5 +1,7 @@
 # HoneywellSecurityMQTT
 
+[![pipeline status](https://gitlab.com/vondruska/345securitymqtt/badges/master/pipeline.svg)](https://gitlab.com/vondruska/345securitymqtt/commits/master)
+
 This project is based on fusterjj's HonewellSecurityMQTT project which was based on jhaines0's HoneywellSecurity.  It listen's for events from 345MHz security sensors and sends messages via MQTT.  
 
 I attempted for simple event/message translation, but some state/persistance was required to acheive debouncing of signals.
