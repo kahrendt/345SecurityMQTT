@@ -102,6 +102,7 @@ int main(int argc, char ** argv)
 
     int devId = 0;
     int freq = 345000000;
+    int sampleRate = 1000000;
 
     if (config["sdr"]) {
         YAML::Node sdrSettings = config["sdr"];
@@ -122,6 +123,10 @@ int main(int argc, char ** argv)
 
         if (sdrSettings["frequency"]) {
             freq = std::stoi(sdrSettings["frequency"].as<std::string>());
+        }
+
+        if (sdrSettings["sample_rate"]) {
+            sampleRate = std::stoi(sdrSettings["sample_rate"].as<std::string>());
         }
     }
 
@@ -192,7 +197,7 @@ int main(int argc, char ** argv)
     //
     // Set the sample rate
     //
-    if(rtlsdr_set_sample_rate(dev, 1000000) < 0)
+    if(rtlsdr_set_sample_rate(dev, sampleRate) < 0)
     {
         std::cout << "Failed to set sample rate" << std::endl;
         return -1;
