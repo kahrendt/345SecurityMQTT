@@ -5,6 +5,9 @@
 
 #include <rtl-sdr.h>
 
+#include <yaml-cpp/yaml.h>
+
+#include <fstream>
 #include <iostream>
 #include <cmath>
 #include <csignal>
@@ -12,7 +15,7 @@
 #include <sys/time.h>
 #include <cstdlib>
 #include <string>
-#include <yaml-cpp/yaml.h>
+
 
 // TODO: MQTT Will doesn't seem to be working with HA as expected
 
@@ -26,65 +29,15 @@ float magLut[0x10000];
 void usage(const char *argv0)
 {
     std::cout << "Usage: " << std::endl
-        << argv0 << " [-d <device-id>] [-f <frequency in Hz]" << std::endl;
+        << argv0 << " [-c <path of configuration file>]" << std::endl;
 }
 
 int main(int argc, char ** argv)
 {
-    YAML::Node config = YAML::LoadFile("/config/settings.yaml");
+    const char *configFile = "settings.yaml";
 
-    const char *mqttHost = "127.0.0.1";
-    if (config["mqtt_host"]) {
-        mqttHost = const_cast<char*>(config["mqtt_host"].as<std::string>().c_str());
-    }
-
-    int mqttPort = 1883;
-    if (config["mqtt_port"]) {
-        mqttPort = std::stoi(config["mqtt_port"].as<std::string>());
-    }
-
-    const char *mqttUsername = "";
-    if (config["mqtt_username"]) {
-        mqttUsername = const_cast<char*>(config["mqtt_username"].as<std::string>().c_str());
-    }
-
-    const char *mqttPassword = "";
-    if (config["mqtt_password"]) {
-        mqttPassword = const_cast<char*>(config["mqtt_password"].as<std::string>().c_str());
-    }
-
-    bool automaticGain = true;
-    if (config["automatic_gain"]) {
-        automaticGain = config["automatic_gain"].as<bool>();
-    }
-
-    int gainValue = 490;
-    if (!automaticGain && config["gain_value"]) {
-        gainValue = std::stoi(config["gain_value"].as<std::string>());
-    }
-    else if (!automaticGain) {
-        std::cout << "Automatic gain and specific gain not set in YAML, using default specific gain of 490" << std::endl;
-    }
-
-    int devId = 0;
-    if (config["device_id"]) {
-        devId = std::stoi(config["device_id"].as<std::string>());
-    }
-
-    int freq = 345000000;
-    if (config["frequency"]) {
-        freq = std::stoi(config["frequency"].as<std::string>());
-    }
-
-    
-    Mqtt mqtt = Mqtt("sensors345", mqttHost, mqttPort, mqttUsername, mqttPassword, "security/sensors345/rx_status", "FAILED");
-    DigitalDecoder dDecoder = DigitalDecoder(mqtt);
-    AnalogDecoder aDecoder;
-    
-    //int devId = 0;
-    //int freq = 345000000;
     signed char c;
-    while ((c = getopt(argc, argv, "hd:f:")) != -1)
+    while ((c = getopt(argc, argv, "hc:")) != -1)
     {
         switch(c)
         {
@@ -93,14 +46,9 @@ int main(int argc, char ** argv)
                 usage(argv[0]);
                 exit(0);
             }
-            case 'd':
+            case 'c':
             {
-                devId = atoi(optarg);
-                break;
-            }
-            case 'f':
-            {
-                freq = atoi(optarg);
+                configFile = optarg;
                 break;
             }
             default: // including '?' unknown character
@@ -112,6 +60,77 @@ int main(int argc, char ** argv)
         }
     }
     
+    YAML::Node config = YAML::Load("");
+
+    std::ifstream configurationFile;
+    configurationFile.open(configFile);
+    if (!configurationFile) {
+        std::cout << "Config file not given/found, using default settings" << std::endl;
+    }
+    else {
+        config = YAML::LoadFile(configFile);
+    }
+
+    const char *mqttHost = "127.0.0.1";
+    int mqttPort = 1883;
+    const char *mqttUsername = "";
+    const char *mqttPassword = "";
+
+    if (config["mqtt"]) {
+        YAML::Node mqttSettings = config["mqtt"];
+        if (mqttSettings["mqtt_host"]) {
+            mqttHost = const_cast<char*>(config["mqtt"]["mqtt_host"].as<std::string>().c_str());
+        }
+
+        if (mqttSettings["mqtt_port"]) {
+            mqttPort = std::stoi(config["mqtt"]["mqtt_port"].as<std::string>());
+        }
+
+
+        if (mqttSettings["mqtt_username"]) {
+            mqttUsername = const_cast<char*>(config["mqtt"]["mqtt_username"].as<std::string>().c_str());
+        }
+
+
+        if (mqttSettings["mqtt_password"]) {
+            mqttPassword = const_cast<char*>(config["mqtt"]["mqtt_password"].as<std::string>().c_str());
+        }
+    }
+
+    bool automaticGain = true;
+    int gainValue = 490;
+
+    int devId = 0;
+    int freq = 345000000;
+
+    if (config["sdr"]) {
+        YAML::Node sdrSettings = config["sdr"];
+        if (sdrSettings["automatic_gain"]) {
+            automaticGain = config["sdr"]["automatic_gain"].as<bool>();
+        }
+
+        if (!automaticGain && sdrSettings["gain_value"]) {
+            gainValue = std::stoi(sdrSettings["gain_value"].as<std::string>());
+        }
+        else if (!automaticGain) {
+            std::cout << "Automatic gain and specific gain not set in YAML, using default specific gain of 490" << std::endl;
+        }
+
+        if (sdrSettings["device_id"]) {
+            devId = std::stoi(config["sdr"]["device_id"].as<std::string>());
+        }
+
+        if (sdrSettings["frequency"]) {
+            freq = std::stoi(sdrSettings["frequency"].as<std::string>());
+        }
+    }
+
+    
+    Mqtt mqtt = Mqtt("sensors345", mqttHost, mqttPort, mqttUsername, mqttPassword, "security/sensors345/rx_status", "FAILED");
+    DigitalDecoder dDecoder = DigitalDecoder(mqtt);
+    AnalogDecoder aDecoder;
+    
+
     //
     // Open the device
     //
@@ -260,7 +279,3 @@ int main(int argc, char ** argv)
     rtlsdr_close(dev);
     return 0;
 }
-
-
-
-

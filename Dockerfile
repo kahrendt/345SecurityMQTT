@@ -25,4 +25,4 @@ COPY --from=build /usr/src/app/345SecurityMQTT/src/345toMqtt 345toMqtt
 ENV INITSYSTEM on
 
 # Run our binary on container startup
-CMD ./345toMqtt
+CMD ./345toMqtt -c /config/settings.yaml
