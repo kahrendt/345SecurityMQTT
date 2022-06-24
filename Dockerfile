@@ -3,7 +3,7 @@ FROM $ARCH/debian:stretch AS build
 
 # Install build tools and remove apt-cache afterwards
 RUN apt-get -q update && apt-get install -yq --no-install-recommends \
-	build-essential librtlsdr-dev rtl-sdr libmosquittopp-dev git \
+	build-essential librtlsdr-dev rtl-sdr libmosquittopp-dev git libyaml-cpp-dev \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Switch into our apps working directory

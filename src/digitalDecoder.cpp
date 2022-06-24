@@ -307,11 +307,11 @@ bool DigitalDecoder::isPayloadValid(uint64_t payload, uint64_t polynomial) const
             polynomial = 0x18005;
         } else if (sof == 0xD || sof == 0xE) {
             // Vivint
-            printf("Vivint Sensor %x", sof);
+            printf("Vivint Sensor %lu", sof);
             polynomial = 0x18050; // Don't know if this is correct
         } else {
             // Something else?
-            printf("Unknown Brand Sensor %x", sof);
+            printf("Unknown Brand Sensor %lu", sof);
             polynomial = 0x18050;
         }
     }

@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <cstdlib>
 #include <string>
+#include <yaml-cpp/yaml.h>
 
 // TODO: MQTT Will doesn't seem to be working with HA as expected
 
@@ -30,34 +31,58 @@ void usage(const char *argv0)
 
 int main(int argc, char ** argv)
 {
-    const char *mqttHost = std::getenv("MQTT_HOST");
-    if ((mqttHost == NULL) || (std::char_traits<char>::length(mqttHost) == 0))
-    {
-        mqttHost = MQTT_HOST;
+    YAML::Node config = YAML::LoadFile("/config/settings.yaml");
+
+    const char *mqttHost = "127.0.0.1";
+    if (config["mqtt_host"]) {
+        mqttHost = const_cast<char*>(config["mqtt_host"].as<std::string>().c_str());
     }
-    const char *mqttPortStr = std::getenv("MQTT_PORT");
-    int mqttPort = MQTT_PORT;
-    if ((mqttPortStr) && (std::char_traits<char>::length(mqttPortStr) > 0))
-    {
-        mqttPort = std::stoi(mqttPortStr);
+
+    int mqttPort = 1883;
+    if (config["mqtt_port"]) {
+        mqttPort = std::stoi(config["mqtt_port"].as<std::string>());
     }
-    const char *mqttUsername = std::getenv("MQTT_USERNAME");
-    if ((mqttUsername == NULL) || (std::char_traits<char>::length(mqttUsername) == 0))
-    {
-        mqttUsername = MQTT_USERNAME;
+
+    const char *mqttUsername = "";
+    if (config["mqtt_username"]) {
+        mqttUsername = const_cast<char*>(config["mqtt_username"].as<std::string>().c_str());
     }
-    const char *mqttPassword = std::getenv("MQTT_PASSWORD");
-    if ((mqttPassword == NULL) || (std::char_traits<char>::length(mqttPassword) == 0))
-    {
-        mqttPassword = MQTT_PASSWORD;
+
+    const char *mqttPassword = "";
+    if (config["mqtt_password"]) {
+        mqttPassword = const_cast<char*>(config["mqtt_password"].as<std::string>().c_str());
     }
+
+    bool automaticGain = true;
+    if (config["automatic_gain"]) {
+        automaticGain = config["automatic_gain"].as<bool>();
+    }
+
+    int gainValue = 490;
+    if (!automaticGain && config["gain_value"]) {
+        gainValue = std::stoi(config["gain_value"].as<std::string>());
+    }
+    else if (!automaticGain) {
+        std::cout << "Automatic gain and specific gain not set in YAML, using default specific gain of 490" << std::endl;
+    }
+
+    int devId = 0;
+    if (config["device_id"]) {
+        devId = std::stoi(config["device_id"].as<std::string>());
+    }
+
+    int freq = 345000000;
+    if (config["frequency"]) {
+        freq = std::stoi(config["frequency"].as<std::string>());
+    }
+
     
     Mqtt mqtt = Mqtt("sensors345", mqttHost, mqttPort, mqttUsername, mqttPassword, "security/sensors345/rx_status", "FAILED");
     DigitalDecoder dDecoder = DigitalDecoder(mqtt);
     AnalogDecoder aDecoder;
     
-    int devId = 0;
-    int freq = 345000000;
+    //int devId = 0;
+    //int freq = 345000000;
     signed char c;
     while ((c = getopt(argc, argv, "hd:f:")) != -1)
     {
@@ -118,19 +143,32 @@ int main(int argc, char ** argv)
     //
     // Set the gain
     //
-    if(rtlsdr_set_tuner_gain_mode(dev, 1) < 0)
-    {
-        std::cout << "Failed to set gain mode" << std::endl;
-        return -1;
+    if (automaticGain) {
+        if(rtlsdr_set_tuner_gain_mode(dev, 0) < 0)
+        {
+            std::cout << "Failed to set gain mode" << std::endl;
+            return -1;
+        }
+
+        std::cout << "Successfully set gain to automatic" << std::endl;
+    }
+    else {
+        if(rtlsdr_set_tuner_gain_mode(dev, 1) < 0)
+        {
+            std::cout << "Failed to set gain mode" << std::endl;
+            return -1;
+        }
+        
+        if(rtlsdr_set_tuner_gain(dev, gainValue) < 0)
+        {
+            std::cout << "Failed to set gain" << std::endl;
+            return -1;
+        }
+
+        std::cout << "Successfully set gain to " << rtlsdr_get_tuner_gain(dev) << std::endl;
     }
     
-    if(rtlsdr_set_tuner_gain(dev, 490) < 0)
-    {
-        std::cout << "Failed to set gain" << std::endl;
-        return -1;
-    }
-    
-    std::cout << "Successfully set gain to " << rtlsdr_get_tuner_gain(dev) << std::endl;
+
     
     //
     // Set the sample rate
