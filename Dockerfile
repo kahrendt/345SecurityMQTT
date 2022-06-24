@@ -3,7 +3,7 @@ FROM $ARCH/debian:stretch AS build
 
 # Install build tools and remove apt-cache afterwards
 RUN apt-get -q update && apt-get install -yq --no-install-recommends \
-	build-essential librtlsdr-dev rtl-sdr libmosquittopp-dev git libyaml-cpp-dev \
+	build-essential librtlsdr-dev rtl-sdr libmosquittopp-dev libyaml-cpp-dev git \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Switch into our apps working directory
@@ -16,7 +16,7 @@ RUN ./build.sh
 FROM $ARCH/debian:stretch
 
 RUN apt-get -q update && apt-get install -yq --no-install-recommends \
-	librtlsdr-dev rtl-sdr libmosquittopp-dev \
+	librtlsdr-dev rtl-sdr libmosquittopp-dev libyaml-cpp-dev \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /usr/src/app/345SecurityMQTT/src/345toMqtt 345toMqtt
